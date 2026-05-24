@@ -1,5 +1,5 @@
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use log::{info};
+use log::info;
 use serde::Serialize;
 use std::env;
 
@@ -7,8 +7,7 @@ mod actions;
 mod encoder;
 mod error;
 mod processor;
-mod utils;
-use processor::{process_image, ImageQuery};
+use processor::{process_image, process_uploaded_image, ImageQuery, UploadQuery};
 
 #[derive(Serialize)]
 struct StatusResponse<'a> {
@@ -25,15 +24,28 @@ async fn status() -> impl Responder {
     })
 }
 
+/// GET / — existing URL-based image processing
 async fn apply_photon_effect(
     query: web::Query<ImageQuery>,
 ) -> Result<HttpResponse, error::AppError> {
     let (buf, content_type) = process_image(query).await?;
 
-    // Return the new image with a one-year cache header
     Ok(HttpResponse::Ok()
         .content_type(content_type)
         .append_header(("Cache-Control", "public, max-age=31536000"))
+        .body(buf))
+}
+
+/// POST /process — direct image upload processing
+async fn process_upload(
+    query: web::Query<UploadQuery>,
+    body: web::Bytes,
+) -> Result<HttpResponse, error::AppError> {
+    let (buf, content_type) = process_uploaded_image(query, body).await?;
+
+    Ok(HttpResponse::Ok()
+        .content_type(content_type)
+        .append_header(("Cache-Control", "no-cache"))
         .body(buf))
 }
 
@@ -64,6 +76,10 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .route("/status", web::get().to(status))
             .route("/", web::get().to(apply_photon_effect))
+            // New: direct upload processing
+            // Accept up to 15 MB payloads (image + overhead)
+            .app_data(web::PayloadConfig::new(15 * 1024 * 1024))
+            .route("/process", web::post().to(process_upload))
     })
     .workers(workers)
     .bind(server_addr)?
