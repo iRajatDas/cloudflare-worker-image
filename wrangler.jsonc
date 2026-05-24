@@ -51,7 +51,7 @@
   "kv_namespaces": [
     {
       "binding": "JOB_STATE",
-      "id": "<PASTE_YOUR_KV_NAMESPACE_ID_HERE>"
+      "id": "953d6a7381b3443bb152e6d4c5bad4c2"
     }
   ],
 
