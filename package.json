@@ -11,7 +11,7 @@
     "log": "wrangler tail"
   },
   "devDependencies": {
-    "wrangler": "^4.22.0"
+    "wrangler": "^4.94.0"
   },
   "dependencies": {
     "@cloudflare/containers": "^0.0.13"
