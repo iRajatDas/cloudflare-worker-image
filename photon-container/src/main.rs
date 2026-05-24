@@ -7,6 +7,7 @@ mod actions;
 mod encoder;
 mod error;
 mod processor;
+mod utils;
 use processor::{process_image, process_uploaded_image, ImageQuery, UploadQuery};
 
 #[derive(Serialize)]
